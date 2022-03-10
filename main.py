@@ -1,13 +1,17 @@
 # Телеграм-бот v.002 - бот создаёт меню, присылает собачку, и анекдот
 
 import telebot  # pyTelegramBotAPI	4.3.1
+import requests
+import bs4
 from telebot import types
 
 bot = telebot.TeleBot('5191652585:AAFgiV9xp8-bkRIXikmXrdnMKXygMOWcagI')  # Создаем экземпляр бота
 
+
 # -----------------------------------------------------------------------
 def inputBot(message, text):
     a = []
+
     def ret(message):
         a.clear()
         a.append(message.text)
@@ -19,6 +23,8 @@ def inputBot(message, text):
     while a == []:
         pass
     return a[0]
+
+
 # Функция, обрабатывающая команду /start
 @bot.message_handler(commands=["start"])
 def start(message, res=False):
@@ -44,11 +50,11 @@ def get_text_messages(message):
     if ms_text == "Главное меню" or ms_text == "👋 Главное меню" or ms_text == "Вернуться в главное меню":  # ..........
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton("Развлечения")
-        btn2 = types.KeyboardButton("WEB-камера")
+        btn2 = types.KeyboardButton("Рандомное Аниме!!!")
         btn3 = types.KeyboardButton("Управление")
         btn4 = types.KeyboardButton("ДЗ")
         back = types.KeyboardButton("Помощь")
-        markup.add(btn1, btn2, btn3,btn4, back)
+        markup.add(btn1, btn2, btn3, btn4, back)
         bot.send_message(chat_id, text="Вы в главном меню", reply_markup=markup)
 
     elif ms_text == "Развлечения":  # ..................................................................................
@@ -65,10 +71,10 @@ def get_text_messages(message):
         bot.send_photo(message.chat.id, img)
 
     elif ms_text == "Прислать анекдот":  # .............................................................................
-        bot.send_message(chat_id, text="-Дочь, ты пила? -Нет мама, я топор.....")
+        bot.send_message(chat_id, text=get_anekdot())
 
-    elif ms_text == "WEB-камера":
-        bot.send_message(chat_id, text="еще не готово...")
+    elif ms_text == "Рандомное Аниме!!!":
+        bot.send_message(chat_id, get_anime())
 
     elif ms_text == "Управление":  # ...................................................................................
         bot.send_message(chat_id, text="еще не готово...")
@@ -118,7 +124,7 @@ def get_text_messages(message):
     elif ms_text == "VI":
         a = inputBot(message, "Введите имя")
         n = len(a)
-        bot.send_message(chat_id, a[1:n-1:])
+        bot.send_message(chat_id, a[1:n - 1:])
         bot.send_message(chat_id, a[::-1])
         bot.send_message(chat_id, a[-3::])
         bot.send_message(chat_id, a[:5:])
@@ -144,29 +150,47 @@ def get_text_messages(message):
         spaces = 0
         for i in range(0, len(un)):
             if un[i] == ' ':
-                bot.send_message(chat_id,"Пробел в имени не допустим")
+                bot.send_message(chat_id, "Пробел в имени не допустим")
                 spaces += 1
                 break
             else:
                 spaces = 0
         if spaces == 0:
-            bot.send_message(chat_id,"Имя введено правильно")
+            bot.send_message(chat_id, "Имя введено правильно")
         if ua > 150 or ua < 0:
-            bot.send_message(chat_id,"Вы ввели не корректный возраст")
+            bot.send_message(chat_id, "Вы ввели не корректный возраст")
         else:
-            bot.send_message(chat_id,"Возраст введён правильно")
+            bot.send_message(chat_id, "Возраст введён правильно")
     elif ms_text == "X":
-        bot.send_message(chat_id,"Помоги решить плиз")
-        bot.send_message(chat_id,"1/2*x*y+(47-x-y)*(x/3+y/4)")
+        bot.send_message(chat_id, "Помоги решить плиз")
+        bot.send_message(chat_id, "1/2*x*y+(47-x-y)*(x/3+y/4)")
         v = int(inputBot(message, "Жду ответ"))
         if v == 282:
-            bot.send_message(chat_id,"Ты что киборг???????????????")
+            bot.send_message(chat_id, "Ты что киборг???????????????")
         else:
-            bot.send_message(chat_id,"Ну.........ты хотя бы попытался)")
-    else:# ...........................................................................................................
+            bot.send_message(chat_id, "Ну.........ты хотя бы попытался)")
+    else:  # ...........................................................................................................
         bot.send_message(chat_id, text="Я тебя слышу!!! Ваше сообщение: " + ms_text)
 
+
+def get_anekdot():
+    array_anekdots = []
+    req_anek = requests.get('http://anekdotme.ru/random')
+    soup = bs4.BeautifulSoup(req_anek.text, "html.parser")
+    result_find = soup.select('.anekdot_text')
+    for result in result_find:
+        array_anekdots.append(result.getText().strip())
+    return array_anekdots[0]
+def get_anime():
+    array_anime = []
+    req_anime = requests.get('https://manga-chan.me/manga/random')
+    soup = bs4.BeautifulSoup(req_anime.text, "html.parser")
+    result_find = soup.findAll("a", class_="title_link")
+    return result_find
+
+
+
 # -----------------------------------------------------------------------
-bot.polling(none_stop=True, interval=0) # Запускаем бота
+bot.polling(none_stop=True, interval=0)  # Запускаем бота
 
 print()
