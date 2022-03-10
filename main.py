@@ -3,6 +3,7 @@
 import telebot  # pyTelegramBotAPI	4.3.1
 import requests
 import bs4
+import json
 from telebot import types
 
 bot = telebot.TeleBot('5191652585:AAFgiV9xp8-bkRIXikmXrdnMKXygMOWcagI')  # Создаем экземпляр бота
@@ -67,8 +68,7 @@ def get_text_messages(message):
 
     elif ms_text == "/dog" or ms_text == "Прислать собаку":  # .........................................................
 
-        img = open('Пёс.jpg', 'rb')
-        bot.send_photo(message.chat.id, img)
+        bot.send_photo(message.chat.id, Get_dogURL())
 
     elif ms_text == "Прислать анекдот":  # .............................................................................
         bot.send_message(chat_id, text=get_anekdot())
@@ -181,6 +181,7 @@ def get_anekdot():
     for result in result_find:
         array_anekdots.append(result.getText().strip())
     return array_anekdots[0]
+
 def get_anime():
     array_anime = []
     req_anime = requests.get('https://manga-chan.me/manga/random')
@@ -188,9 +189,10 @@ def get_anime():
     result_find = soup.findAll("a", class_="title_link")
     return result_find
 
+def Get_dogURL():
+    contents = requests.get("https://random.dog/woof.json").json()
+    return contents["url"]
 
-
-# -----------------------------------------------------------------------
-bot.polling(none_stop=True, interval=0)  # Запускаем бота
+bot.polling(none_stop=True, interval=0)
 
 print()
