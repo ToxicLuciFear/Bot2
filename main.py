@@ -54,9 +54,18 @@ def get_text_messages(message):
         btn2 = types.KeyboardButton("Рандомное Аниме!!!")
         btn3 = types.KeyboardButton("Управление")
         btn4 = types.KeyboardButton("ДЗ")
+        btn5 = types.KeyboardButton("Узнать погоду")
         back = types.KeyboardButton("Помощь")
-        markup.add(btn1, btn2, btn3, btn4, back)
+        markup.add(btn1, btn2, btn3, btn4, btn5, back)
         bot.send_message(chat_id, text="Вы в главном меню", reply_markup=markup)
+
+    elif ms_text == "Узнать погоду":
+        city = inputBot(message, text='Введите город')
+
+        r = requests.get('http://api.openweathermap.org/data/2.5/weather?&units=metric&q=%s&appid=0c9f3c052f1d81b7062750ff0926f345' % (city))
+        data = r.json()
+        temp = data["main"]["temp"]
+        bot.send_message(chat_id, text='Температура в ' + str(city) + ':' + str(temp) + '°C')
 
     elif ms_text == "Развлечения":  # ..................................................................................
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -75,6 +84,8 @@ def get_text_messages(message):
 
     elif ms_text == "Рандомное Аниме!!!":
         bot.send_message(chat_id, get_anime())
+        bot.send_message(chat_id, get_anime_in())
+        bot.send_message(chat_id, get_anime_im())
 
     elif ms_text == "Управление":  # ...................................................................................
         bot.send_message(chat_id, text="еще не готово...")
@@ -189,9 +200,29 @@ def get_anime():
     result_find = soup.findAll("a", class_="title_link")
     return result_find
 
+def get_anime_in():
+    array_anime_in = []
+    req_anime_in = requests.get('https://manga-chan.me/manga/random')
+    soup = bs4.BeautifulSoup(req_anime_in.text, "html.parser")
+    result_find_in = soup.findAll("div", class_="tags")
+    return result_find_in
+
+
 def Get_dogURL():
     contents = requests.get("https://random.dog/woof.json").json()
     return contents["url"]
+
+def get_anime_im():
+    array_anime_im = []
+    req_anime_im = requests.get('https://manga-chan.me/manga/random')
+    soup = bs4.BeautifulSoup(req_anime_im.text, "html.parser")
+    result_find_im = soup.findAll("div", class_="content_row")
+    name = result_find_im.find("a")
+    inf = result_find_im.find("div", class_="tags")
+    im = []
+    for img in result_find_im.findALL("img"):
+        im.append(img.get("src"))
+    return im[0]
 
 bot.polling(none_stop=True, interval=0)
 
