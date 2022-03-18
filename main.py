@@ -83,9 +83,10 @@ def get_text_messages(message):
         bot.send_message(chat_id, text=get_anekdot())
 
     elif ms_text == "Рандомное Аниме!!!":
-        bot.send_message(chat_id, get_anime())
-        bot.send_message(chat_id, get_anime_in())
-        bot.send_message(chat_id, get_anime_im())
+        result_find_name, result_find_in, im = get_anime()
+        bot.send_message(chat_id, result_find_name)
+        bot.send_message(chat_id, im[0])
+        bot.send_message(chat_id, result_find_in)
 
     elif ms_text == "Управление":  # ...................................................................................
         bot.send_message(chat_id, text="еще не готово...")
@@ -194,35 +195,27 @@ def get_anekdot():
     return array_anekdots[0]
 
 def get_anime():
-    array_anime = []
     req_anime = requests.get('https://manga-chan.me/manga/random')
     soup = bs4.BeautifulSoup(req_anime.text, "html.parser")
-    result_find = soup.findAll("a", class_="title_link")
-    return result_find
+    result_find = soup.find("div", class_="content_row")
 
-def get_anime_in():
+    result_find_name = result_find.find("h2")
+
     array_anime_in = []
-    req_anime_in = requests.get('https://manga-chan.me/manga/random')
-    soup = bs4.BeautifulSoup(req_anime_in.text, "html.parser")
-    result_find_in = soup.findAll("div", class_="tags")
-    return result_find_in
+    result_find_in = result_find.find("div", class_="tags")
+
+    im = []
+    for img in result_find.findAll("img"):
+        im.append(img.get("src"))
+    return result_find_name, result_find_in, im
+
 
 
 def Get_dogURL():
     contents = requests.get("https://random.dog/woof.json").json()
     return contents["url"]
 
-def get_anime_im():
-    array_anime_im = []
-    req_anime_im = requests.get('https://manga-chan.me/manga/random')
-    soup = bs4.BeautifulSoup(req_anime_im.text, "html.parser")
-    result_find_im = soup.findAll("div", class_="content_row")
-    name = result_find_im.find("a")
-    inf = result_find_im.find("div", class_="tags")
-    im = []
-    for img in result_find_im.findALL("img"):
-        im.append(img.get("src"))
-    return im[0]
+
 
 bot.polling(none_stop=True, interval=0)
 
